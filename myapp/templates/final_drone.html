@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js Rotate Object with Mouse Interaction</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+    {% load static %}
+</head>
+<body>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three/build/three.module.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OBJLoader } from 'https://cdn.jsdelivr.net/npm/three@0.147.0/examples/jsm/loaders/OBJLoader.js';
+
+        // Global variables for scene setup
+        let scene, camera, renderer;
+        let objectToRotate;
+        let isMouseDown = false;
+        let prevMouseX = 0;
+        let prevMouseY = 0;
+
+        // Initialize Three.js scene
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff); // Set background color to white
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Light setup (if needed)
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(1, 1, 1).normalize();
+            scene.add(light);
+
+            // Load OBJ model
+            const loader = new OBJLoader();
+            loader.load(
+                '{% static "object.obj" %}', // Adjust path to your model
+                function (obj) {
+                    objectToRotate = obj;
+                    scene.add(obj);
+                },
+                undefined,
+                function (error) {
+                    console.error(error);
+                }
+            );
+
+            // Initialize mouse interaction for rotation and zoom
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('wheel', onWheel); // Add wheel event for zooming
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        // Start everything
+        init();
+        animate();
+
+        // Function to handle mouse down event
+        function onMouseDown(event) {
+            isMouseDown = true;
+            prevMouseX = event.clientX;
+            prevMouseY = event.clientY;
+        }
+
+        // Function to handle mouse move for rotation
+        function onMouseMove(event) {
+            if (isMouseDown) {
+                const deltaX = event.clientX - prevMouseX;
+                const deltaY = event.clientY - prevMouseY;
+
+                if (objectToRotate) {
+                    objectToRotate.rotation.y += deltaX / 100;  // Adjust sensitivity for left-right rotation
+                    objectToRotate.rotation.x += deltaY / 100;  // Adjust sensitivity for up-down rotation
+                }
+
+                prevMouseX = event.clientX;
+                prevMouseY = event.clientY;
+            }
+        }
+
+        // Function to handle mouse up event
+        function onMouseUp(event) {
+            isMouseDown = false;
+        }
+
+        // Function to handle mouse wheel event for zooming
+        function onWheel(event) {
+            const delta = event.deltaY;
+
+            if (objectToRotate) {
+                if (delta < 0) {
+                    // Zoom in
+                    camera.position.z -= 0.5;  // Adjust zoom speed
+                } else {
+                    // Zoom out
+                    camera.position.z += 0.5;  // Adjust zoom speed
+                }
+            }
+        }
+
+        // Event listener for window resize
+        window.addEventListener('resize', function () {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

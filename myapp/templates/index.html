@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlyAI Design</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+
+        .card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+            display: none;
+            /* Initially hide all cards */
+        }
+
+        .card.active {
+            display: block;
+            /* Show the active card */
+        }
+
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 80px;
+        }
+
+        .select-container {
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .select-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .select-container select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .other-input {
+            margin-top: 5px;
+        }
+
+        .other-input input[type="text"] {
+            width: calc(100% - 16px);
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .other-input input[type="text"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        /* Loader */
+        .loading-container {
+            z-index: 99999;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            /* semi-transparent background */
+            backdrop-filter: blur(5px);
+            /* blur background */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .loading {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #3498db;
+            /* blue color */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            /* spinning animation */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            /* soft shadow */
+        }
+
+        .loading-text {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading card -->
+    <div class="loading-container">
+        <div class="loading"></div>
+        <div class="loading-text">
+            <span id="loading-message"></span>
+        </div>
+    </div>
+
+    <div id="intro" class="card active">
+        <h2>FlyAI Design.</h2>
+        <p>FlyAI Design.</p>
+        <button class="btn" onclick="nextCard('intro', 'countryCard')">Next</button>
+    </div>
+
+    <div id="countryCard" class="card">
+        <h2>Country Selection</h2>
+        <div class="select-container">
+            <label>Select your Country:</label>
+            <div class="options">
+                <label class="option">
+                    <input type="radio" name="country" value="USA"> USA
+                </label>
+                <label class="option">
+                    <input type="radio" name="country" value="Canada"> Canada
+                </label>
+                <label class="option">
+                    <input type="radio" name="country" value="India"> India
+                </label>
+
+                <!-- <label class="option">
+                    <input type="checkbox" name="country" value="other"> Other
+                </label>-->
+
+            </div>
+            <div id="otherCountryInput" class="other-input" style="display: none;">
+                <input type="text" name="otherCountry" placeholder="Enter other country">
+            </div>
+        </div>
+        <button class="btn" onclick="nextCard('countryCard', 'weightCard')">Next</button>
+    </div>
+
+    <!-- Weight Card -->
+    <div id="weightCard" class="card">
+        <h2>Payload Weight</h2>
+        <div class="select-container">
+            <label for="weight">Choose the Range of Payload weight:</label>
+            <div class="options">
+                <label class="option">
+                    <input type="radio" name="weight" value="Upto 1 Kg"> Upto 1 Kg
+                </label>
+                <label class="option">
+                    <input type="radio" name="weight" value="1-5kg"> 1 to 5 Kg
+                </label>
+                <label class="option">
+                    <input type="radio" name="weight" value="5-10kg"> 5 to 10 Kg
+                </label>
+                <label class="option">
+                    <input type="radio" name="weight" value="10-15kg"> 10 to 15 Kg
+                </label>
+                <label class="option">
+                    <input type="radio" name="weight" value="15-20kg"> 15 to 20 Kg
+                </label>
+                <label class="option">
+                    <input type="radio" name="weight" value="20-30kg"> 20 to 30 Kg
+                </label>
+                <label class="option">
+                    <input type="radio" name="weight" value="other"> Other
+                </label>
+            </div>
+            <div id="otherWeightInput" class="other-input" style="display: none;">
+                <input type="text" name="otherWeight" placeholder="Enter other weight range">
+            </div>
+        </div>
+        <button class="btn" onclick="prevCard()">Previous</button>
+        <button class="btn" onclick="nextCard('weightCard', 'typeCard')">Next</button>
+    </div>
+
+    <!-- Payload Type -->
+    <div id="typeCard" class="card">
+        <h2>Payload Type</h2>
+        <div class="select-container">
+            <label for="type">Choose Payload Type:</label>
+            <div class="options">
+                <label class="option">
+                    <input type="radio" name="type" value="Camera"> Camera
+                </label>
+
+                <!--<label class="option">
+                    <input type="radio" name="type" value="Winch"> Winch
+                </label>
+                <label class="option">
+                    <input type="radio" name="type" value="Liquid Tank"> Liquid Tank
+                </label>-->
+
+                <label class="option">
+                    <input type="radio" name="type" value="Logistics Box"> Logistics Box
+                </label>
+                <label class="option">
+                    <input type="radio" name="type" value="other"> Other
+                </label>
+            </div>
+            <div id="otherTypeInput" class="other-input" style="display: none;">
+                <input type="text" name="otherType" placeholder="Enter other payload type">
+            </div>
+        </div>
+        <button class="btn" onclick="prevCard()">Previous</button>
+        <button class="btn" onclick="nextCard('typeCard', 'profileCard')">Next</button>
+    </div>
+
+
+    <div id="profileCard" class="card">
+        <h2>Mission Profile</h2>
+        <div class="select-container">
+            <label for="profile">Choose Mission Profile:</label>
+            <div class="options">
+                <label class="option">
+                    <input type="radio" name="profile" value="Photogrammetry"> Photogrammetry
+                </label>
+                <label class="option">
+                    <input type="radio" name="profile" value="Inspection"> Inspection
+                </label>
+                <label class="option">
+                    <input type="radio" name="profile" value="Surveillance"> Surveillance
+                </label>
+                <label class="option">
+                    <input type="radio" name="profile" value="Logistics"> Logistics
+                </label>
+                <label class="option">
+                    <input type="radio" name="profile" value="other"> Other
+                </label>
+            </div>
+            <div id="otherProfileInput" class="other-input" style="display: none;">
+                <input type="text" name="otherProfile" placeholder="Enter other mission profile">
+            </div>
+        </div>
+        <button class="btn" onclick="prevCard()">Previous</button>
+        <button class="btn" onclick="nextCard('profileCard', 'envelopeCard')">Next</button>
+    </div>
+
+    <div id="envelopeCard" class="card">
+        <h2>Operational Envelope</h2>
+        <div class="select-container">
+            <label>Choose Operational Envelope:</label>
+            <div class="options">
+                <label>
+                    <input type="radio" name="envelope" value="BVLOS"> BVLOS
+                </label>
+                <label>
+                    <input type="radio" name="envelope" value="LOS"> LOS
+                </label>
+            </div>
+            <div id="otherEnvelopeInput" class="other-input" style="display: none;">
+                <input type="text" name="otherEnvelope" placeholder="Enter other operational envelope">
+            </div>
+        </div>
+        <button class="btn" onclick="prevCard()">Previous</button>
+        <button class="btn" onclick="nextCard('envelopeCard', 'autonomyCard')">Next</button>
+    </div>
+
+    <div id="autonomyCard" class="card">
+        <h2>Autonomy Level</h2>
+        <div class="select-container">
+            <label>Choose Autonomy Level:</label>
+            <div class="options">
+                <label>
+                    <input type="radio" name="autonomy" value="Level 4 Autonomy"> Level 4 Autonomy
+                </label>
+                <label>
+                    <input type="radio" name="autonomy" value="RPAS"> RPAS
+                </label>
+                <label>
+                    <input type="radio" name="autonomy" value="Semi-Autonomous"> Semi-Autonomous
+                </label>
+
+
+            </div>
+            <div id="otherAutonomyInput" class="other-input" style="display: none;">
+                <input type="text" name="otherAutonomy" placeholder="Enter other operational autonomy">
+            </div>
+        </div>
+        <button class="btn" onclick="prevCard()">Previous</button>
+        <button class="btn" onclick="nextCard('autonomyCard', 'safetyCard')">Next</button>
+    </div>
+
+    <div id="safetyCard" class="card">
+        <h2>Safety Features</h2>
+        <div class="select-container">
+            <label>Choose Safety Features:</label>
+            <div class="options">
+
+                <label>
+
+                    <label>
+
+                        <input type="checkbox" name="safety" value="Parachute (only for 10 Kg+ payload)"> Parachute
+                        (only for 10 Kg+ payload)
+                    </label>
+                    <label>
+                        <input type="checkbox" name="safety" value="Obstacle Avoidance"> Obstacle Avoidance
+                    </label>
+                    <label>
+                        <input type="checkbox" name="safety" value="other"> Propeller Guard
+                    </label>
+            </div>
+            <div id="otherSafetyInput" class="other-input" style="display: none;">
+                <input type="text" name="otherSafety" placeholder="Enter other operational safety">
+            </div>
+        </div>
+        <button class="btn" onclick="prevCard()">Previous</button>
+        <button class="btn" onclick="submitForm()">Submit</button>
+    </div>
+
+    <script>
+        let currentCard = 0;
+        const cards = document.querySelectorAll('.card');
+
+        function nextCard(_this, cardId) {
+            // Example usage (you can call this function when needed)
+            if (_this == 'countryCard') {
+                var contryCount = 0;
+                const checkboxes = document.querySelectorAll('input[name="country"]');
+                let countrySelected = false;
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        contryCount += 1;
+                        countrySelected = true;
+                    }
+                });
+                if (!countrySelected) {
+                    alert("Please select any one country to continue");
+                    return;
+                }
+                var values = Array.from(document.querySelectorAll('input[name="country"]:checked')).map(input => input.value);
+                if (values.includes('other')) {
+                    if (contryCount < 2 && document.querySelector('input[name="otherCountry"]').value == '') {
+                        alert("Please provide input for the 'Other' country option.");
+                        return;
+                    }
+                }
+            }
+
+            if (_this == 'weightCard') {
+                // const weightSelect = document.getElementById('weight');
+                var weight = document.querySelector('input[name="weight"]:checked');
+                if (!weight) {
+                    alert("Please select weight to continue");
+                    return;
+                }
+                if (weight.value == 'other') {
+                    if (document.querySelector('input[name="otherWeight"]').value.trim() == '') {
+                        alert("Please provide input for the 'Other' weight option.");
+                        return;
+                    }
+                }
+            }
+
+            if (_this == 'typeCard') {
+                // const typeSelect = document.getElementById('type');
+                var type = document.querySelector('input[name="type"]:checked');
+                if (!type) {
+                    alert("Please select type to continue");
+                    return;
+                }
+                if (type.value == 'other') {
+                    if (document.querySelector('input[name="otherType"]').value.trim() == '') {
+                        alert("Please provide input for the 'Other' type option.");
+                        return;
+                    }
+                }
+            }
+
+            if (_this == 'profileCard') {
+                var profile = document.querySelector('input[name="profile"]:checked');
+                // const profileSelect = document.getElementById('profile');
+                if (!profile) {
+                    alert("Please select profile to continue");
+                    return false;
+                }
+                if (profile.value == 'other') {
+                    if (document.querySelector('input[name="otherProfile"]').value.trim() == '') {
+                        alert("Please provide input for the 'Other' profile option.");
+                        return;
+                    }
+                }
+            }
+
+            if (_this == 'envelopeCard') {
+                var envelope = document.querySelector('input[name="envelope"]:checked');
+                // const envelopeSelect = document.getElementById('envelope');
+                if (!envelope) {
+                    alert("Please select envelope to continue");
+                    return;
+                }
+                if (envelope.value == 'other') {
+                    if (document.querySelector('input[name="otherEnvelope"]').value.trim() == '') {
+                        alert("Please provide input for the 'Other' envelope option.");
+                        return;
+                    }
+                }
+            }
+
+            if (_this == 'autonomyCard') {
+                var autonomy = document.querySelector('input[name="autonomy"]:checked');
+                if (!autonomy) {
+                    alert("Please select autonomy to continue");
+                    return;
+                }
+                if (autonomy.value == 'other') {
+                    if (document.querySelector('input[name="otherAutonomy"]').value.trim() == '') {
+                        alert("Please provide input for the 'Other' autonomy option.");
+                        return;
+                    }
+                }
+            }
+
+            if (_this == 'safetyCard') {
+                var safety = document.querySelector('input[name="safety"]:checked');
+                if (!safety) {
+                    alert("Please select safety option to continue");
+                    return;
+                }
+                if (safety.value == 'other') {
+                    if (document.querySelector('input[name="otherSafety"]').value.trim() == '') {
+                        alert("Please provide input for the 'Other' safety option.");
+                        return;
+                    }
+                }
+            }
+
+            showLoading();
+            cards[currentCard].classList.remove('active');
+            document.getElementById(cardId).classList.add('active');
+            currentCard++;
+
+        }
+
+        function prevCard() {
+            cards[currentCard].classList.remove('active');
+            currentCard--;
+            cards[currentCard].classList.add('active');
+        }
+
+        function submitForm() {
+
+            if (document.querySelector('input[name="safety"]:checked').value === "") {
+                alert("Please select safety feature to continue");
+                return;
+            }
+
+            let formData = {};
+
+            // Collect selected values from each field
+            formData['country'] = Array.from(document.querySelectorAll('input[name="country"]:checked')).map(input => input.value);
+            if (formData['country'].includes('other')) {
+                formData['otherCountry'] = document.querySelector('input[name="otherCountry"]').value;
+            }
+            var weight = document.querySelector('input[name="weight"]:checked');
+            var type = document.querySelector('input[name="type"]:checked');
+            var profile = document.querySelector('input[name="profile"]:checked');
+            var envelope = document.querySelector('input[name="envelope"]:checked');
+            var autonomy = document.querySelector('input[name="autonomy"]:checked');
+            var safety = document.querySelector('input[name="safety"]:checked');
+            var otherWeight = document.querySelector('input[name="otherWeight"]').value.trim();
+            var otherType = document.querySelector('input[name="otherType"]').value.trim();
+            var otherProfile = document.querySelector('input[name="otherProfile"]').value.trim();
+            var otherEnvelope = document.querySelector('input[name="otherEnvelope"]').value.trim();
+            var otherAutonomy = document.querySelector('input[name="otherAutonomy"]').value.trim();
+            var otherSafety = document.querySelector('input[name="otherSafety"]').value.trim();
+
+
+            if (weight) formData['weight'] = weight.value;
+            if (otherWeight) formData['otherWeight'] = otherWeight;
+            if (type) formData['type'] = type.value;
+            if (otherType) formData['otherType'] = otherType;
+            if (profile) formData['profile'] = profile.value;
+            if (otherProfile) formData['otherProfile'] = otherProfile;
+            if (envelope) formData['envelope'] = envelope.value;
+            if (otherEnvelope) formData['otherEnvelope'] = otherEnvelope;
+            if (autonomy) formData['autonomy'] = autonomy.value;
+            if (otherAutonomy) formData['otherAutonomy'] = otherAutonomy;
+            if (safety) formData['safety'] = safety.value;
+            if (otherSafety) formData['otherSafety'] = otherSafety;
+            // Simulate form submission or further processing
+            console.log(formData);
+            // Replace with actual submission logic
+            // Convert formData object to query string
+            const queryString = Object.keys(formData).map(key => {
+                if (Array.isArray(formData[key])) {
+                    return formData[key].map(value => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
+                }
+                return `${encodeURIComponent(key)}=${encodeURIComponent(formData[key])}`;
+            }).join('&');
+
+            // Navigate to results page with query string
+            window.location.href = '/results.html?' + queryString;
+        }
+
+        // Show/hide "Other" input fields based on dropdown selection
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', function () {
+                let otherInput = this.nextElementSibling;
+                if (this.value === 'other') {
+                    otherInput.style.display = 'block';
+                    otherInput.querySelector('input').focus();
+                } else {
+                    otherInput.style.display = 'none';
+                    otherInput.querySelector('input').value = '';
+                }
+            });
+        });
+
+        // Show/hide "Other" input for country based on checkbox selection
+        document.querySelector('input[name="country"][value="other"]').addEventListener('change', function () {
+            let otherInput = document.getElementById('otherCountryInput');
+            if (this.checked) {
+                otherInput.style.display = 'block';
+                otherInput.querySelector('input').focus();
+            } else {
+                otherInput.style.display = 'none';
+                otherInput.querySelector('input').value = '';
+            }
+        });
+        function toggleOtherInput(radioGroupName, otherInputId) {
+            const selectedOption = document.querySelector(`input[name="${radioGroupName}"]:checked`);
+            const otherInput = document.getElementById(otherInputId);
+            if (selectedOption && selectedOption.value === 'other') {
+                otherInput.style.display = 'block';
+            } else {
+                otherInput.style.display = 'none';
+            }
+        }
+
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                const name = event.target.name;
+                toggleOtherInput(name, `other${capitalizeFirstLetter(name)}Input`);
+            });
+        });
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // Loader
+        function showLoading() {
+            // const cardID = cardID;
+            const loadingContainer = document.querySelector('.loading-container');
+            const loadingMessage = document.querySelector('#loading-message');
+
+            loadingMessage.textContent = "Dragon AI engine analysing...";
+            loadingContainer.style.visibility = 'visible';
+            loadingContainer.style.opacity = '1';
+
+            setTimeout(() => {
+                loadingContainer.style.opacity = '0';
+                setTimeout(() => {
+                    loadingContainer.style.visibility = 'hidden';
+
+                }, 300); // Hide loading container after fade-out animation
+            }, 1000); // Hide loading after 12 seconds total (6s for each message)
+        }
+
+    </script>
+</body>
+
+</html>

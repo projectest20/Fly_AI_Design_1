@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js Rotate Object with Mouse Interaction</title>
+    <style>
+
+        body { margin: 0; }
+        canvas { display: block; }
+
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+        }
+
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 20px;
+            border-radius: 8px;
+
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+            width: 300px;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .card h2{
+            text-align: center;
+        }
+
+
+
+        .card h2 {
+            text-align: center;
+        }
+
+        .card ul {
+
+            list-style-type: none;
+        }
+
+        /* Loader */
+        .loading-container {
+            z-index: 99999;
+
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.9); /* semi-transparent background */
+    backdrop-filter: blur(5px); /* blur background */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.loading {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #3498db; /* blue color */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite; /* spinning animation */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* soft shadow */
+}
+
+.loading-text {
+    margin-top: 10px;
+    text-align: center;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+    </style>
+    {% load static %}
+</head>
+
+        
+<body>
+    <div class="loading-container">
+        <div class="loading"></div>
+        <div class="loading-text">
+            <span id="loading-message"></span>
+        </div>
+    </div>
+    <div class="card">
+        <h2>Final specification</h2>
+        <ul>
+            <li><b>Country:</b> {% for country in countries %} {{ country }}, {% endfor %}</li>
+            <li><b>Weight Range:</b> {{ weights }}</li>
+            <li><b>Playload Type:</b> {{ type }}</li>
+            <li><b>Mission Profile:</b> {{ profile }}</li>
+            <li><b>Operational Envelope:</b> {{ envelope }}</li>
+            <li><b>Autonomy Level:</b> {{ autonomy }}</li>
+            <li><b>Safety Features:</b> {{ safety }}</li>
+        </ul>
+    </div>
+    <p id="objFileURL" style="display: none;">{{ obj_file_url }}</p>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three/build/three.module.js"
+            }
+        }
+    </script>
+    <script type="module">
+        // Loader
+        function showLoading() {
+            const loadingContainer = document.querySelector('.loading-container');
+            const loadingMessage = document.querySelector('#loading-message');
+
+            
+            loadingMessage.textContent = "Processing, please wait...";
+            loadingContainer.style.visibility = 'visible';
+            loadingContainer.style.opacity = '1';
+            
+            setTimeout(() => {
+                loadingMessage.textContent = "Fetching data from server...";
+            }, 2000);
+            
+            setTimeout(() => {
+                loadingMessage.textContent = "Almost finished...";
+            }, 4000);// Change message after 6 seconds
+            
+
+
+            loadingMessage.textContent = "Processing, please wait...";
+            loadingContainer.style.visibility = 'visible';
+            loadingContainer.style.opacity = '1';
+
+            setTimeout(() => {
+                loadingMessage.textContent = "Fetching data from server...";
+            }, 2000);
+
+            setTimeout(() => {
+                loadingMessage.textContent = "Almost finished...";
+            }, 4000);// Change message after 6 seconds
+
+
+            setTimeout(() => {
+                loadingContainer.style.opacity = '0';
+                setTimeout(() => {
+                    loadingContainer.style.visibility = 'hidden';
+                }, 300); // Hide loading container after fade-out animation
+            }, 12000); // Hide loading after 12 seconds total (6s for each message)
+        }
+
+        // Example usage (you can call this function when needed)
+        showLoading();
+
+        import * as THREE from 'three';
+        import { OBJLoader } from 'https://cdn.jsdelivr.net/npm/three@0.147.0/examples/jsm/loaders/OBJLoader.js';
+
+        import * as BufferGeometryUtils from "https://unpkg.com/three@latest/examples/jsm/utils/BufferGeometryUtils.js";
+        import { SimplifyModifier } from "https://cdn.jsdelivr.net/npm/three@0.147.0/examples/jsm/modifiers/SimplifyModifier.js";
+
+
+
+        // Global variables for scene setup
+        let scene, camera, renderer;
+        let objectToRotate;
+        let isMouseDown = false;
+        let prevMouseX = 0;
+        let prevMouseY = 0;
+
+        // Initialize Three.js scene
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff); // Set background color to white
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 10;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Light setup (if needed)
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(1, 1, 1).normalize();
+            scene.add(light);
+
+            // Load OBJ model
+            const loader = new OBJLoader();
+            var objFileURL = document.getElementById('objFileURL');
+            console.log(objFileURL.innerText);
+
+
+
+            loader.load(
+                objFileURL.innerText, // Adjust path to your model
+                function (obj) {
+                    objectToRotate = obj;
+                    scene.add(obj);
+
+                    // Compute Bounding Box
+                    const box = new THREE.Box3().setFromObject(objectToRotate);
+                    const size = new THREE.Vector3();
+                    box.getSize(size);
+
+                    console.log("🔍 Original Model Size:", size);
+
+                    // Scale factor based on the largest dimension
+                    const maxSize = Math.max(size.x, size.y, size.z);
+                    const scaleFactor = 10 / maxSize; // Adjust '5' to control final size
+
+                    objectToRotate.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                    scene.add(objectToRotate);
+
+                    console.log("✅ Scaling Model by:", scaleFactor);
+                    let hasMesh = false;
+                    objectToRotate.traverse((child) => {
+                        if (child.isMesh) {
+                            hasMesh = true;
+                            console.log("✅ Mesh Found:", child);
+
+
+                            // Log Geometry Data
+                            console.log("🔍 Geometry Details:");
+                            console.log("Vertices Count:", child.geometry.attributes.position.count);
+                            console.log("Bounding Box:", child.geometry.boundingBox);
+
+                            // Compute Bounding Box (if not already computed)
+                            child.geometry.computeBoundingBox();
+                            console.log("Computed Bounding Box:", child.geometry.boundingBox);
+
+                            // Compute Bounding Sphere (for additional check)
+                            child.geometry.computeBoundingSphere();
+                            console.log("Computed Bounding Sphere:", child.geometry.boundingSphere);
+                        }
+                    });
+                    
+
+                    // If no mesh found, create a default cube
+                    if (!hasMesh) {
+                        console.error("❌ Model has no mesh! Adding a default cube.");
+                        addDefaultMesh();
+                    } else {
+                        scene.add(objectToRotate);
+                    }
+
+                },
+                undefined,
+                function (error) {
+                    console.error(error);
+                }
+            );
+
+            // Initialize mouse interaction for rotation and zoom
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('wheel', onWheel); // Add wheel event for zooming
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        // Start everything
+        init();
+        animate();
+
+        // Function to handle mouse down event
+        function onMouseDown(event) {
+            isMouseDown = true;
+            prevMouseX = event.clientX;
+            prevMouseY = event.clientY;
+        }
+
+        // Function to handle mouse move for rotation
+        function onMouseMove(event) {
+            if (isMouseDown) {
+                const deltaX = event.clientX - prevMouseX;
+                const deltaY = event.clientY - prevMouseY;
+
+                if (objectToRotate) {
+                    objectToRotate.rotation.y += deltaX / 100;  // Adjust sensitivity for left-right rotation
+                    objectToRotate.rotation.x += deltaY / 100;  // Adjust sensitivity for up-down rotation
+                }
+
+                prevMouseX = event.clientX;
+                prevMouseY = event.clientY;
+            }
+        }
+
+        // Function to handle mouse up event
+        function onMouseUp(event) {
+            isMouseDown = false;
+        }
+
+        // Function to handle mouse wheel event for zooming
+        function onWheel(event) {
+            const delta = event.deltaY;
+
+            if (objectToRotate) {
+                if (delta < 0) {
+                    // Zoom in
+                    camera.position.z -= 0.5;  // Adjust zoom speed
+                } else {
+                    // Zoom out
+                    camera.position.z += 0.5;  // Adjust zoom speed
+                }
+            }
+        }
+
+        // Event listener for window resize
+        window.addEventListener('resize', function () {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>
+
+
